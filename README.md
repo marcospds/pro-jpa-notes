@@ -174,9 +174,9 @@ Transações em EJB - EJB Container-managed Transactions
 
 EJB aceitam transações atraves de demarcação de classes e/ou metodos:
 
-```
+
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public void metododeNegocio(){} ```
+    public void metododeNegocio(){}
 
 Anotação @TransactionAttribute pode ser usada na classe e/ou diretamento no metodo. Tendo no metodo, esse tem precendencia sobre classe.
 
