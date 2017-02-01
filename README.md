@@ -4,13 +4,17 @@
 
 Para transformar um POJO em um objeto persistivel, use a anotação @Entity
 
-
 ### @Id
 
 Necessario para informar ao provider qual campo é a chave primaria da entidade
 Pode ser usada ou no campo ou get metodo
 
+
+----------
+
+
 ### Persistence Context
+
 
 O conjunto de todos as classes gerenciadas pelo EntityManager e o EntityManager em si, é chamado de "PesistenceContext"
 Dentro de um mesmo contexto (== Como haver mais de um? ==) não pode existir mais de um objeto com o mesmo id
@@ -19,68 +23,58 @@ EntityManager é criado por um EntityManagerFactory que é criado atraves da cla
 
 Quando uma entida de é retornada do banco de dados, ela passa a ser gereciada pelo EntityManager e a fazer parte do seu respectivo Persistence Context
 
-Para remover uma entidade, ela precisa ja esta sendo gerenciada
+
+----------
 
 ### Removendo uma entidade
 
+Para remover uma entidade, ela precisa ja esta sendo gerenciada
+
 **Jeito certo**
 
-Employee emp = em.find(Employee.class, 158);
-em.remove(emp); //Caso emp seja null (não foi encontrado), será lançada uma IllegalArgumentException
+````Employee emp = em.find(Employee.class, 158);
+em.remove(emp); //Caso emp seja null (não foi encontrado), será lançada uma IllegalArgumentException````
 
 **Jeito errado**
 
-em.remove(new Employee(158)) //Esse objeto não faz parte do contexto de persistencia do entity manager
-
-***********************************************************************
-> We loved with a love that was more than love
-
-> We loved with a love that was more than love
-
-
-
+````em.remove(new Employee(158)) //Esse objeto não faz parte do contexto de persistencia do entity manager````
 
 Metodo "EntityManger.find" não precisa ser executado dentro de uma transação;
 
+----
 
-**Persistence.xml**
+### Persistence.xml
 
 Elemento <class> só é necessário para aplicações SE. No ambiente EE, o container escaneia por classes anotadas com @Entity
 
+----
 
-***********************************************************************
-
-
-### Capitulo 3 - Enterprise Appplication
+## Capitulo 3 - Enterprise Appplication
 
 
 Não é necessario  interfaces para definir interfaces de um session bean statefull, stateless ou singleton
 Bens sem a anotação de tipo são locais 
 
-* Stateless 
+### Stateless 
 
 Tem os seguintes eventos de ciclo de vida
 
-	* PostConstructor: Chamado após o termino do construtor. Ideal para a alocação de recursos
-	* PreDestroy: Chamado antes do container liberar a instancia do bean para o GC. Ideal para liberar recursos.
+* **PostConstructor:**  Chamado após o termino do construtor. Ideal para a alocação de recursos
+* **PreDestroy:** Chamado antes do container liberar a instancia do bean para o GC. Ideal para liberar recursos.
 
-
-
-* Statefull
+### Statefull
 
 Tem os mesmos eventos de ciclo de vida do stateless bean e mais:
 
-	* PrePassivate: Usado quando o server irá passivar (serializar o bean) por algum motivo (liberação de recusos, replicação para cluster, etc)
-	* PostActivate: Usado quando o container, após ativar um bean, irá ativa-lo novamente.
+* **PrePassivate: ** Usado quando o server irá passivar (serializar o bean) por algum motivo (liberação de recusos, replicação para cluster, etc)
+* **PostActivate:** Usado quando o container, após ativar um bean, irá ativa-lo novamente.
 
-@Remove
+####@Remove
 
-	Quando um metodo anotado com @Remove é chamado, isso sinaliza para o container o fim do uso desse session statefull bean pelo cliente. Caso o cliente chame mais um algum metodo no bean após um desse metodo ter sido chamado, é lançado uma exception
-
-	????? Um metodo privado pode ser anotado com @Remove e ser chamado por qualquer metodo do cliente ou esse metodo deve ser chamado diretamente pelo proxy? ?????
+Quando um metodo anotado com @Remove é chamado, isso sinaliza para o container o fim do uso desse session statefull bean pelo cliente. Caso o cliente chame mais um algum metodo no bean após um desse metodo ter sido chamado, é lançado uma exception
 
 
-* Singleton
+### Singleton
 
 Podem ser criados de forma eager
 Apenas uma instancia durante toda a execucação da aplicação
