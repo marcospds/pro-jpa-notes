@@ -9,7 +9,6 @@ Para transformar um POJO em um objeto persistivel, use a anotação @Entity
 Necessario para informar ao provider qual campo é a chave primaria da entidade
 Pode ser usada ou no campo ou get metodo
 
-
 ----------
 
 
@@ -17,12 +16,11 @@ Pode ser usada ou no campo ou get metodo
 
 
 O conjunto de todos as classes gerenciadas pelo EntityManager e o EntityManager em si, é chamado de "PesistenceContext"
-Dentro de um mesmo contexto (== Como haver mais de um? ==) não pode existir mais de um objeto com o mesmo id
+Dentro de um mesmo contexto não pode existir mais de um objeto com o mesmo id
 
 EntityManager é criado por um EntityManagerFactory que é criado atraves da classe Persistence que tem seus valores configurados na persistence unit
 
 Quando uma entida de é retornada do banco de dados, ela passa a ser gereciada pelo EntityManager e a fazer parte do seu respectivo Persistence Context
-
 
 ----------
 
@@ -43,6 +41,7 @@ Metodo "EntityManger.find" não precisa ser executado dentro de uma transação;
 
 ----
 
+
 ### Persistence.xml
 
 Elemento <class> só é necessário para aplicações SE. No ambiente EE, o container escaneia por classes anotadas com @Entity
@@ -50,6 +49,9 @@ Elemento <class> só é necessário para aplicações SE. No ambiente EE, o cont
 ----
 
 ## Capitulo 3 - Enterprise Appplication
+
+
+**Talves seja bom você pular esse capitulo agora. Muita coisa aqui não vai fazer sentido no começo**
 
 
 Não é necessario  interfaces para definir interfaces de um session bean statefull, stateless ou singleton
@@ -76,20 +78,21 @@ Quando um metodo anotado com @Remove é chamado, isso sinaliza para o container 
 
 ### Singleton
 
-Podem ser criados de forma eager
-Apenas uma instancia durante toda a execucação da aplicação
-Ideal para compartilhar estados da aplicação.
-Tem os mesmos eventos de ciclo de vida de um Stateless session bean
-Definidos usando a anotação @Singleton
-O container gerencia concorrencia assegurando que apenas uma invocação por vez aconteça aos metodos do bean (ruim para performance)
-A anotação @Startup define que esse bean deve ser criado juntamente com o start da aplicação.
-Comportamentos eager ou lazy são vendor-specific, não devendo ser assumidos como verdadeiros
+* Podem ser criados de forma eager
+* Apenas uma instancia durante toda a execucação da aplicação
+* Ideal para compartilhar estados da aplicação.
+* Tem os mesmos eventos de ciclo de vida de um Stateless session bean
+* Definidos usando a anotação @Singleton
+* O container gerencia concorrencia assegurando que apenas uma invocação por vez aconteça aos metodos do bean (ruim para performance)
+* A anotação @Startup define que esse bean deve ser criado juntamente com o start da aplicação.
+* Comportamentos eager ou lazy são vendor-specific, não devendo ser assumidos como verdadeiros
 
+----
 
+### Dependency Management and CDI
 
-Dependency Management and CDI
+#### @Resource, @EJB, @PersistenceContext ou @PersistenceUnit
 
-@Resource, @EJB, @PersistenceContext ou @PersistenceUnit
 
 Usado nas referencias para procurar o recurso (Similar ao @Inject do CDI){}.
 
@@ -110,146 +113,145 @@ Exemplo:
 	audit = (AuditService) 
 	ctx.lookup("java:comp/env/deptAudit");
 
-O prefixo "java:comp/env" indica para o servidor onde procurar ????? PESQUISAR ?????
+O prefixo "java:comp/env" indica para o servidor onde procurar
 
 Para EJB é possivel fazer o lookup através de EJBContext ou seu filho, SessionContext. Tem duas vantagens:
 
-	* É possivel usar diretamente o nome do recurso (context.lookup("deptAudit");)
-	* Esse metodo encapsula todas as exceptions checadas, ficando apenas as de runtime.
+* É possivel usar diretamente o nome do recurso (context.lookup("deptAudit");)
+* Esse metodo encapsula todas as exceptions checadas, ficando apenas as de runtime.
 
 
-	????? Fazer lockup de um EJB usando InitialContext e SessionContext e ver qual diferença. Terei acesso a timers com ambos? ?????
-
-
-Dependency Injection
-
-* Anotações de recurso a nivel de campo/metodo
+#### Dependency Injection
 
 O container é responsavel por gerenciar as dependecias removendo assim a necessidade do lookup manualmente pela aplicação.
-Para injeção através do campo, não é necessário o metodo set e o campo pode ser private ????? VERIFICAR ?????
+Para injeção através do campo, não é necessário o metodo set e o campo pode ser private
 O nome gerado automatico é formado por "NOME COMPLETO DA CLASS/CAMPO"
 
 
-Declaring Dependencies
+### Declaring Dependencies
 
-* PersistenceContext
+
+#### PersistenceContext
 
 Modo SE de conseguir um EntityManager:
 
-EntityManager em = Persistence.createEntityManagerFactory(PERSISTENCE UNIT).createEntityManager();
+```EntityManager em = Persistence.createEntityManagerFactory(PERSISTENCE UNIT).createEntityManager();```
 
 Modo EE de conseguir um EntityManager:
 
-@PersistenceContext(unitName = PERSISTENCE UNIT)
-private EntityManager em;
+```@PersistenceContext(unitName = PERSISTENCE UNIT)
+private EntityManager em;```
 
 Nome do Persistence Unit não é obrigatorio, mas varia de vendor para vendor como tratar sua omissão (alguns, caso exista apenas um persistence unit no arquivo, usam esse. Outros obrigam o uso de um arquivo a parte)
 
 
-* PersistenceUnit
+#### PersistenceUnit
 
 Utilizado para recuperar a instancia do EntityManagerFactory
 
 
-* Resource
+#### Resource
 
 Utilizado para recuperar outros recursos do servidor (datasource, initialContext/SessionContext)
 
 
-Transaçoes
+##### Transaçoes
 
 O ato de inicar (transaction.begin) e de terminar uma transaction (transaction.commit) é chamado de "transaction demarction". É um aspecto muito importante pois fazer isso maior do que o necessario, pode causar problemas de performace.
 
 
 Tipos de comportamentos para um metodo com a transação gerenciada pelo container (CMT):
 
-	* MANDATORY: é esperado que quando esse metodo for chamado, já haja uma transação ativa. Caso não, uma exception é lançada;
-	* REQUIRED: Caso ja haja uma transação ativa para esse metodo, o container irá usa-la. Caso não, uma nova será criada.
-	* REQUIRED_NEW: Usado para quando o metodo precisa de uma transação para si proprio. Perigoso pois pode causar um overhead na aplicação;
-	* SUPORTS: não é mandatorio, mas caso um metodo seja chamado dentro de uma transação, o mesmo irá continuar rodando.
-	* NOT_SUPORTS: Metodo nao pode ser usado dentro de uma transação. Caso ao ser chamado uma transação ja esteja aberta, o container ira pausa-la e executar o metodo sem transação;
-	* NEVER: Metodo não suporta transações e faz com que o container lance uma exception caso o mesmo seja chamado dentro uma.
+* MANDATORY: é esperado que quando esse metodo for chamado, já haja uma transação ativa. Caso não, uma exception é lançada;
+* REQUIRED: Caso ja haja uma transação ativa para esse metodo, o container irá usa-la. Caso não, uma nova será criada.
+* REQUIRED_NEW: Usado para quando o metodo precisa de uma transação para si proprio. Perigoso pois pode causar um overhead na aplicação;
+* SUPORTS: não é mandatorio, mas caso um metodo seja chamado dentro de uma transação, o mesmo irá continuar rodando.
+* NOT_SUPORTS: Metodo nao pode ser usado dentro de uma transação. Caso ao ser chamado uma transação ja esteja aberta, o container ira pausa-la e executar o metodo sem transação;
+* NEVER: Metodo não suporta transações e faz com que o container lance uma exception caso o mesmo seja chamado dentro uma.
 
 
 Transações em EJB - EJB Container-managed Transactions
 
 EJB aceitam transações atraves de demarcação de classes e/ou metodos:
 
-	/*
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public void metododeNegocio(){} 
-    */
+```
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void metododeNegocio(){} ```
 
 Anotação @TransactionAttribute pode ser usada na classe e/ou diretamento no metodo. Tendo no metodo, esse tem precendencia sobre classe.
 
 
-Demais recursos - Transactional Interceptors
+#### Demais recursos - Transactional Interceptors
 
 Para os mais recuros (beans, servlets, etc) use o inteceptor @Transcational. Segue as mesmas regras que o mecanismo usado para EJBs.
 
-***** Transações não comitadas antes do fim do metodo, serão rollback pelo container *****
+Transações não comitadas antes do fim do metodo, serão rollback pelo container. Muitas transações porem não precisam de um commit explicito pelo cliente. Quando a transação é gerenciada pelo container, a mesma será comitada no fim do seu escopo (mais sobre isso lá na frente. Aguente firme ai)
 
 
-BMT (Bean Managed Transaction)
-
-Quando um metodo de um EJB com uma transação iniciada pelo container (CMT) chamada um metodo de um EJB BMT, a transação incial é suspensa até que o controle volte para o bean original.
+### Capitulo 4 - Object-Relational Mapping
 
 
-Resource local transactions are always demarcated explicitly by the application, whereas container transactions can either be demarcated automatically by the container or by using a JTA interface_ that supports application-controlled demarcation. The first case, when the container takes over the responsibility of transaction demarcation, is called container-managed transaction (CMT) management, but when the application is responsible for demarcation, its called bean-managed transaction (BMT) management.
-EJBs can use either container-managed transactions or bean-managed transactions. Servlets are limited to the somewhat poorly named bean-managed transaction. The default transaction management style for an EJB component is container-managed. To explicitly configure an EJB to have its transactions demarcated one way or the other, the @TransactionManagement annotation should be specified on the EJB class. The TransactionManagementType enumerated type defines BEAN for bean-managed transactions and CONTAINER for container-managed transactions. Listing 3-24 demonstrates how to enable bean-managed transactions using this approach.
+#### Metodos de acesso
 
+Define o modo como a propriedade será lida e mapeada pelo container e pode ser de tudas formas: diretamente pelo campo (field) ou atráves dos metodos get/set (propertie)
 
- ===== Capitulo 4 - Object-Relational Mapping =====
+Não existe um padrão. Ao colocar a anotaçõe no campo ou na propriedade, você esta definindo como o campo será acessado.
 
-Metodos de acesso
+Para especificar o tipo de acesso, basta colocar a anotação do JPA (@Id, @Column, etc) no local desejado.
 
-	Para especificar o tipo de acesso, basta colocar a anotação do JPA (@Id, @Column, etc) no local desejado.
+Podem ser via campo ou via metodo:
 
-	Podem ser via campo ou via metodo:
+* Campo
+
+Anotando o campo, o mesmo será acessado via reflection. O campo não pode ser publico.
+
+* Propriedade
+
+Anotando o metodo, os metodo serão chamados diretamente. A anotação deve ser usada no metodo GET do campo.
+
+O campo deve ser private ou protected.
+
+O tipo do campo, que será mapeado para a tabela, será assumido como o tipo retornado pelo metodo. Esse tipo deve ser o mesmo do metodo set.
+
+Usando o padrão JavaBean, é obrigatorio que o metodo GET e SET tenham o mesmo sufixo;
+
+Ao usar esse tipo, sufixo do metodo get, é o que será usado para criar a coluna. Exemplo:
+
+	...
+	private long wage;
+	public long getSalario() {return this.wage;}
+	...
+
+Nome do campo coluna será salario (getSalario) e não wage (nome do campo)
 	
-	* Anotando o campo, os metodos get e set serão invocados via reflection (CHAMOU VIA REFLECTION)
-		# Campo não pode ser public
-
-	* Anotando o metodo, os metodo serão chamados diretamente.
-		# Campo deve ser private ou protected
-		# Anotação deve estar no metodo GET
-		# Tipo do campo será assumido como o tipo retornado pelo metodo. Esse tipo deve ser o mesmo do metodo set
-		# obrigatorio que o metodo GET e SET tenham o mesmo sufixo;
-		# Ao usar esse tipo, sufixo do metodo get, é o que será usado para criar a coluna. Exemplo:
 
 
-			private long wage;
-			public long getSalario() {return this.wage;}
-		
-		Nome do campo coluna será salario (getSalario) e não wage (nome do campo)
+É possive fazer uma mistura, por exemplo, definir que o acesso padrão para todos os campos da classe é através do campo, MAS para um item espeficico que precisa de um tratamento, mudar seu acesso para metodo:
+
+
+1) Use a anotação @Access e a enum AccessType para definir o acesso padrão a classe:
 	
-
-
- 	É possive fazer uma mistura, por exemplo, definir que o acesso padrão para todos os campos da classe é através do campo, MAS para um item espeficico que precisa de um tratamento, mudar seu acesso para metodo:
-
-
- 	1) Use a anotação @Access e a enum AccessType para definir o acesso padrão a classe:
-		@Entity
+    	@Entity
 		@Access(AccessType.FIELD)
 		public class Employee { ... }
 
-	2) Defina que para uma propriedade especifica, o acesso deve ser feito atráves do metodo:
+2) Defina que para uma propriedade especifica, o acesso deve ser feito atráves do metodo:
 
 		@Access(AccessType.PROPERTY) 
 		@Column(name="PHONE") //Importante usar essa anotação para definir qual é o nome do campo e manter o mapeamento com a tabela.
 		protected String getPhoneNumberForDb() { ... }
 
-	3) Como o acesso padrão da classe é via campo, é necessario informar para o provider, que esse campo não deve ser persistido. Caso não faça isso, o valor ser persistido duas vezes (uma pela classe e outra pelo metodo):
+3) Como o acesso padrão da classe é via campo, é necessario informar para o provider, que esse campo não deve ser persistido. Caso não faça isso, o valor ser persistido duas vezes (uma pela classe e outra pelo metodo):
 
 		@Transient 
 		private String phoneNum;
 
 
-Mapeando a entidade
+### Mapeando a entidade
 
-	Caso o nome da tabela não seja o mesmo da classe (o padrão ao anota a classe com @Entity), use a anotação a tabela:
+Caso o nome da tabela não seja o mesmo da classe (o padrão ao anota a classe com @Entity), use a anotação a tabela:
 	
-	Esse entidade será mapeada para a tabela "EMP"
+	Esse entidade será mapeada para a tabela EMP
 	@Table(name="EMP")
 
 	É possivel usar essa anotação para definir a qual schema essa tabela pertence:
@@ -258,71 +260,90 @@ Mapeando a entidade
 	O mesmo para catalogos:
 	@Table(name="EMP", catalog="HR")
 
+Existe uma diferença entre definir o nome da tabela usando a anotação Entity ou Table.
 
-Mapeamento de campos
+* Ao usar **Table**, o nome da tabela no banco de dados será o mesmo definido aqui.
 
-	@Basic
-	A forma mais basica de falar que um campo é persistivel. 
-	É adicionado implicitamento.
-	Atráves do atributo 'fetch' pode definir que certo campo NÃO será inicialmente carregado do banco de dados. O mesmo só deve ser carregado quando o campo por acesso. As opções são "fetch=FetchType.LAZY"  ou "fetch=FetchType.EAGER" (padrão)
-	Através do atributo "nullable" é indicado se esse atributo pode ser null ou não na tabela (equivalente a "not null" na criação)
-	Atráves do atributo "updateable" é informado se esse atributo será atualizado no banco de dados após a execucação do EntityManager.update
+* Ao usar **Entity**, alem do nome da tabela mudar, o nome da entidade tambem ira. O nome da entidade é usado quando estamos escrevendo queries, por exemplo.
+
+### Mapeamento de campos
+
+**@Basic**
+
+A forma mais basica de falar que um campo é persistivel. 
+
+É adicionado implicitamento.
+
+Atráves do atributo 'fetch' pode definir que certo campo NÃO será inicialmente carregado do banco de dados. 
+
+O mesmo só deve ser carregado quando o campo por acesso. As opções são "fetch=FetchType.LAZY"  ou "fetch=FetchType.EAGER" (padrão)
+
+Através do atributo "nullable" é indicado se esse atributo pode ser null ou não na tabela (equivalente a "not null" na criação)
+
+Atráves do atributo "updateable" é informado se esse atributo será atualizado no banco de dados após a execucação do EntityManager.update
 
 
-	@Column
-	Pode ser usada em conjunto com @Basic. Entre outras opções, pode ser usada para definir que o nome desse campo ao ser mapeado para uma coluna, deve ser outro.
+**@Column**
+
+Pode ser usada em conjunto com @Basic. Entre outras opções, pode ser usada para definir que o nome desse campo ao ser mapeado para uma coluna, deve ser outro.
 
 
-	Large Objects
-	Para fazer o mapeamento de campos Large Objects, deve ser utilizado a anotação @Lob (Large Objects).
-	No banco de dados, LOB se divide em BLOB (binario) e CLOB (caracteres), sendo mapeados em java para: 
+### Large Objects
+
+Para fazer o mapeamento de campos Large Objects, deve ser utilizado a anotação @Lob (Large Objects).
+
+No banco de dados, LOB se divide em BLOB (binario) e CLOB (caracteres), sendo mapeados em java para: 
 
 	BLOB: byte[], Byte[], e Serializable
 	CLOB: char[], Character[], and String
 
 
-	ENUM
-	Os valores declarados dentro de uma enum recebem um "index" referente a posição em que são declarados.
-	Ao persistir uma enum, o comportamento padrão é persitir um inteiro referente ao valor selecionado.
+### ENUM
+Os valores declarados dentro de uma enum recebem um "index" referente a posição em que são declarados.
+Ao persistir uma enum, o comportamento padrão é persitir um inteiro referente ao valor selecionado.
 
-	Exemplo:
+Exemplo:
+
 	public enum EmployeeType {
-	    FULL_TIME_EMPLOYEE, 
-	    PART_TIME_EMPLOYEE, 
-	    CONTRACT_EMPLOYEE;  
+	    FULL_TIME_EMPLOYEE, // Se usado, será persistindo o valor 0 no campo
+	    PART_TIME_EMPLOYEE, // Valor 1
+	    CONTRACT_EMPLOYEE;  // Valor 2
 	}
 
-	Esse comportamento pode causar problemas caso a ordem da declaração da enumeção mude.
-	Para alterar o comportamento padrão e definir que o valor da enumeração deve ser persistido como um Strig use:
+Esse comportamento pode causar problemas caso a ordem da declaração da enumeção mude. Para alterar o comportamento padrão e definir que o valor da enumeração deve ser persistido como um Strig use:
 
 		@Enumerated(EnumType.STRING)
 		private EmployeeType type;
 
 
-	Temporal Types
-	Meio de persistir estado sobre o tempo.
+### Temporal Types
+	
+Quando o campo da entidade é de um tipo temporal, é necessario um tratamento adicional.
 
-	Tipos permitidos:
+Tipos permitidos:
+
 		java.sql.Date
 		java.sql.Time
 		java.sql.Timestamp
 		java.util.Date
 		java.util.Calendar 
 
-	Ao persistir tipos do pacote javax.sql não é necessario nenhum tratamento adcional.
-	Para persitir tipos do pacote java.util, é necessario usar a anotação @Temporal para especificar qual tipo do pacote java.sql o campo deve ser mapeado. Os possiveis valores são DATE, TIME, e TIMESTAMP e representa cada um dos tipo;
+Para persitir tipos do pacote java.util, é necessario usar a anotação @Temporal para especificar qual tipo do pacote java.sql o campo deve ser mapeado. Os possiveis valores são DATE, TIME, e TIMESTAMP e representa cada um dos tipo;
+Ao persistir tipos do pacote javax.sql não é necessario nenhum tratamento adcional.
 
 
-	Estado transiente:
-	Em situaçoes um campo não deve ser persistido para a base de dados, ou anote o mesmo com @Transient ou use o modificador transient.
-	A diferenciação de uso se deve a:
+### Estado transiente:
+
+Em situaçoes um campo não deve ser persistido para a base de dados, ou anote o mesmo com @Transient ou use o modificador transient.
+
+A diferenciação de uso se deve a:
 
 	O campo pode ser serializdo normalmente pelo java? Se sim, use a anotação. Se não, use o modificador;
 
 
-Chave primaria
+### Chave primaria
 
-	Os tipos permitidos para campos definidos como chave primaria são:
+Os tipos permitidos para campos definidos como chave primaria são:
 
 	Primitive Java types: byte, int, short, long, char
 	Wrapper classes of primitive Java types: Byte, Integer, Short, Long, Character
@@ -330,18 +351,19 @@ Chave primaria
 	Large numeric type: java.math.BigInteger
 	Temporal types: java.util.Date, java.sql.Date
 
-	Ainda são permitidos os tipos double e float e seus wrappers, porem são desencorajados.
+Ainda são permitidos os tipos double e float e seus wrappers, porem são desencorajados.
 
 
-	Geração automatica de valores:
+###Geração automatica de valores:
 
-	Para que o banco de dados gere automaticamente o valor da chave primaria, use a anotação @GeneretedValue e defina sua estrategia conforme melhor se adequar:
+Para que o banco de dados gere automaticamente o valor da chave primaria, use a anotação @GeneretedValue e defina sua estrategia conforme melhor se adequar:
 
 	@GeneratedValue(strategy = GenerationType.SEQUENCE||AUTO||IDENTIFY||TABLE)
 	private int id;
 
-	* Opção AUTO:
-	Nessa opção, que a default, o ORM provider irá escolher qual é a melhor opção (das outras 4) para a geração do idenficador.
+* Opção AUTO:
+
+Nessa opção, que a default, o ORM provider irá escolher qual é a melhor opção (das outras 4) para a geração do idenficador.
 	Mais recomendada para tempo de desenvolvimento.
 
 	* Opção TABLE:
