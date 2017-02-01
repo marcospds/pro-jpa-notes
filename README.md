@@ -1,16 +1,17 @@
-pro-jpa-notes
+# Notes about the book Pro JPA
 
-Notes about the book Pro JPA
-
-Capitulo 2 - Getting Started
+## Capitulo 2 - Getting Started
 
 Para transformar um POJO em um objeto persistivel, use a anotação @Entity
 
-@Id
+
+### @Id
+
 Necessario para informar ao provider qual campo é a chave primaria da entidade
 Pode ser usada ou no campo ou get metodo
 
-Persistence Context
+### Persistence Context
+
 O conjunto de todos as classes gerenciadas pelo EntityManager e o EntityManager em si, é chamado de "PesistenceContext"
 Dentro de um mesmo contexto (== Como haver mais de um? ==) não pode existir mais de um objeto com o mesmo id
 
@@ -20,28 +21,38 @@ Quando uma entida de é retornada do banco de dados, ela passa a ser gereciada p
 
 Para remover uma entidade, ela precisa ja esta sendo gerenciada
 
-======= Removendo uma entidade =======
+### Removendo uma entidade
 
-* Jeito certo *
+**Jeito certo**
+
 Employee emp = em.find(Employee.class, 158);
 em.remove(emp); //Caso emp seja null (não foi encontrado), será lançada uma IllegalArgumentException
 
-* Jeito errado *
+**Jeito errado**
+
 em.remove(new Employee(158)) //Esse objeto não faz parte do contexto de persistencia do entity manager
 
-=======================================
+***********************************************************************
+> We loved with a love that was more than love
+
+> We loved with a love that was more than love
+
+
 
 
 Metodo "EntityManger.find" não precisa ser executado dentro de uma transação;
 
 
-======= Persistence.xml =======
+**Persistence.xml**
+
 Elemento <class> só é necessário para aplicações SE. No ambiente EE, o container escaneia por classes anotadas com @Entity
 
 
 ***********************************************************************
 
-Capitulo 3 - Enterprise Appplication
+
+### Capitulo 3 - Enterprise Appplication
+
 
 Não é necessario  interfaces para definir interfaces de um session bean statefull, stateless ou singleton
 Bens sem a anotação de tipo são locais 
@@ -4667,18 +4678,3 @@ Disabling Annotations
 
 
 		No caso acima, os nomes das colunas que foram alteradas nas anotações serão ignorados e os nomes padrões para os campos serão adotados (NAME e SALARY) em vez dos nomes definidos nas anotações;
-		
-
-
-
-
-
-
-
-
-
-
-
-			
-
-
