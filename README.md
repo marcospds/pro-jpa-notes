@@ -364,45 +364,46 @@ Para que o banco de dados gere automaticamente o valor da chave primaria, use a 
 * Opção AUTO:
 
 Nessa opção, que a default, o ORM provider irá escolher qual é a melhor opção (das outras 4) para a geração do idenficador.
-	Mais recomendada para tempo de desenvolvimento.
+Mais recomendada para tempo de desenvolvimento.
 
-	* Opção TABLE:
-	Ao utilizar essa opção, o valor da chave gerada para a entidade é salvo em uma tabela na base de dados.
-	A tabela precisa ter duas colunas:
+* Opção TABLE:
 
-		* Nome do indice: String chave primaria usada para identicar o "contador"
+Ao utilizar essa opção, o valor da chave gerada para a entidade é salvo em uma tabela na base de dados.
+
+A tabela precisa ter duas colunas:
+
+		* Nome do indice: String chave primaria usada para identicar o contador
 		* Contador: Inteiro que irá guardar a ultima posição utilizada como chave primaria.
 
-	Configuração minima para usar essa estrategia:
+Configuração minima para usar essa estrategia:
 	
 		@Id 
 		@GeneratedValue(strategy=GenerationType.TABLE)
 		private long id;
 
-		Ao declarar o ID dessa forma, o nome da tabela, coluna de chave primaria e valor ficaram por conta do provider JPA e, caso a opção de schema generation estiver ativada, o mesmo ira criar esses valores. Caso não, é necessario que os valores padrões usados pelo provider sejam conhecidos e ja estejam criados.
+Ao declarar o ID dessa forma, o nome da tabela, coluna de chave primaria e valor ficaram por conta do provider JPA e, caso a opção de schema generation estiver ativada, o mesmo ira criar esses valores. Caso não, é necessario que os valores padrões usados pelo provider sejam conhecidos e ja estejam criados.
 
-		Resultado:
+Resultado:
 
-	
-		Nome da tabela
-		-------------------------------------------
-		|COLUNA DA CHAVE PRIMARIA| COLUNA DE VALOR|
-		-------------------------------------------
-		| VALOR PADRAO			 |	0			  |	
-		-------------------------------------------
-		|						 |				  |
-		-------------------------------------------
+```
+| Coluna da chave primaria 	| Coluna 	|
+|--------------------------	|--------	|
+|             Valor padrão 	| 0      	|
+```
 
-	Utilizado a anotação @TableGenerator:
+Utilizado a anotação @TableGenerator:
 
-	A anotação @TableGenerator pode ser definida em ATRIBUTOS ou CLASSES e serve para nomear globalmente um esquema de geração de tabelas. Caso o mesmo esquema seja usado em mais de uma entidade, é aconselhado que o mesmo seja definido via XML.
-	Caso mais de um @TableGenerator aponte para mesma tabela, mas use nome de coluna para chave e valor diferentes, SOMENTE um funcionará.
-	Acontece que ao subir a aplicação, o provider irá encontrar um @TableGenerator na entidade X, irá criar uma tabela com o nome especificado, e suas respectivas para chave e valor. Quando o outro @TableGenerator for encontrado na entidade Y, apontando para a mesma tabela, a tabela já existira e não serão criados as colunas para chave e valor com o nome criado. Ao persistir a entidade a entidade X, sem problemas, mas ao persistir a entidade Y, será lançado uma mensangem "a coluna X para chave (ou valor) não existe."
+A anotação @TableGenerator pode ser definida em ATRIBUTOS ou CLASSES e serve para nomear globalmente um esquema de geração de tabelas. Caso o mesmo esquema seja usado em mais de uma entidade, é aconselhado que o mesmo seja definido via XML.
 
-	As opções de utilização desse anotação são:
+Caso mais de um @TableGenerator aponte para mesma tabela, mas use nome de coluna para chave e valor diferentes, SOMENTE um funcionará.
 
-	1) Somente definido a anotação.
-	É equivalente a configuração minina, pois todos os valores serão usados, serão os padrões definidos pelo provider JPA.
+Acontece que ao subir a aplicação, o provider irá encontrar um @TableGenerator na entidade X, irá criar uma tabela com o nome especificado, e suas respectivas para chave e valor. Quando o outro @TableGenerator for encontrado na entidade Y, apontando para a mesma tabela, a tabela já existira e não serão criados as colunas para chave e valor com o nome criado. Ao persistir a entidade a entidade X, sem problemas, mas ao persistir a entidade Y, será lançado uma mensangem "a coluna X para chave (ou valor) não existe."
+
+As opções de utilização desse anotação são:
+
+1) Somente definido a anotação.
+
+É equivalente a configuração minina, pois todos os valores serão usados, serão os padrões definidos pelo provider JPA.
 	
 	@GeneratedValue(strategy = GenerationType.TABLE,generator="EMPL_GEN")
 	@TableGenerator(name = "EMPL_GEN")
@@ -410,10 +411,11 @@ Nessa opção, que a default, o ORM provider irá escolher qual é a melhor opç
 	private long id;
 
 
-	2) Definindo o nome da tabela e das colunas:
-	Estamos dizendo que "o id do tipo tabela, será utilizara o gerador EMPL_GEN que define o nome da tabela como ID_GEN, o nome da coluna da chave primaria como GEN_NAME e nome da coluna de valor como GEN_VALUE"
+2) Definindo o nome da tabela e das colunas:
 
-	Para esse indice, o valor guardado na coluna da chave primaria será "EMPL_GEN", que é nome do gerador.
+Estamos dizendo que "o id do tipo tabela, será utilizara o gerador EMPL_GEN que define o nome da tabela como ID_GEN, o nome da coluna da chave primaria como GEN_NAME e nome da coluna de valor como GEN_VALUE"
+
+Para esse indice, o valor guardado na coluna da chave primaria será "EMPL_GEN", que é nome do gerador.
 
 	@GeneratedValue(strategy = GenerationType.TABLE, generator="EMPL_GEN")
 	@TableGenerator(
@@ -425,19 +427,21 @@ Nessa opção, que a default, o ORM provider irá escolher qual é a melhor opç
 	@Id
 	private long id;
 
-	Tabela ID_GEN
-	-------------------------
-	|GEN_NAME	| GEN_VALUE |
-	-------------------------
-	| <ENTIDADE>  |	0		|	
-	-------------------------
--
+Resultado:
+```
+Tabela EMPL_GEN
 
-	3) Mais opções
-	Alem das opções definidas no item (2), dizemos que:
-	 "o valor guardado na coluna da chave primaria (nomear do indice), não será EMPL_GEN e sim EMPLOYEE_GEN (opção pkColumnName). O valor inicial da coluna de valor, valor esse usado APENAS para criar a tabela, não será 0 e sim 1000 (ou seja, o primeiro empregado persistido terá o id 1000"
+| GEN_NAME 	| GEN_VALUE 	|
+|----------	|-----------	|
+| ENTIDADE 	| 0         	|-
+```
 
-	 Para agilizar o processo, o JPA salve alguns identificadores na memoria. O tamanho inicial padrão é 50. Para alterar esse valor, use a opção 'allocationSize'.
+3) Mais opções
+
+Alem das opções definidas no item (2), dizemos que:
+ "o valor guardado na coluna da chave primaria (nomear do indice), não será EMPL_GEN e sim EMPLOYEE_GEN (opção pkColumnName). O valor inicial da coluna de valor, valor esse usado APENAS para criar a tabela, não será 0 e sim 1000 (ou seja, o primeiro empregado persistido terá o id 1000"
+
+Para agilizar o processo, o JPA salve alguns identificadores na memoria. O tamanho inicial padrão é 50. Para alterar esse valor, use a opção 'allocationSize'.
 
 	@TableGenerator(
 		name="EMPL_GEN",
@@ -452,35 +456,44 @@ Nessa opção, que a default, o ORM provider irá escolher qual é a melhor opç
 	@Id 
 	private long id;
 
-	Tabela ID_GEN
-	-----------------------------
-	| GEN_NAME		| GEN_VAL   |
-	-----------------------------
-	| EMPLOYEE_GEN  |	10000	|	
-	-----------------------------
+Resultado: 
 
+```
+Tabela ID_GEN
 
-	* Opção SEQUENCE:
+| GEN_NAME     	| GEN_VAL 	|
+|--------------	|---------	|
+| EMPLOYEE_GEN 	| 1000    	|
 
-	Caso o banco de dados suporte, cria uma sequencia que será utilizada para a criação da chave primaria.
-	Diferente da tabela, contem apenas uma coluna (NEXT_VAL) que representa o valor a ser utilizado.
-	Caso mais de uma entidade compartilhe a mesma sequencia, irão utilizar do mesmo valor incremental.
-	Permitido definir apenas o valor inicial, nome da sequence (caso não fornecido, o provider usa seu padrão) e a quantidade alocada a cada vez. 
-	Caso seja usado um esquema já existente, os valores dos parametros definidos acima, devem ser compativeis com os utilizados ao criar a sequence.
+```
 
-	Exemplo de utilização:
+* Opção SEQUENCE:
 
-	1) Modo mais simples:
-	Cria uma sequence com os valores padrões definidos pelo provider
+Caso o banco de dados suporte, cria uma sequencia que será utilizada para a criação da chave primaria.
+
+Diferente da tabela, contem apenas uma coluna (NEXT_VAL) que representa o valor a ser utilizado.
+
+Caso mais de uma entidade compartilhe a mesma sequencia, irão utilizar do mesmo valor incremental.
+
+Permitido definir apenas o valor inicial, nome da sequence (caso não fornecido, o provider usa seu padrão) e a quantidade alocada a cada vez. 
+
+Caso seja usado um esquema já existente, os valores dos parametros definidos acima, devem ser compativeis com os utilizados ao criar a sequence.
+
+Exemplo de utilização:
+
+1) Modo mais simples:
+Cria uma sequence com os valores padrões definidos pelo provider
 
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private int id;
 
-	2) Definindo valores
-	Irá criar uma sequence (tabela na verdade) chamada "role_sequence" com parametros definidos abaixo. 
-	O comando para criar a mesma sequence em SQL seria:
+2) Definindo valores
 
-	CREATE SEQUENCE role_sequence MINVALUE 1 START WITH 1 INCREMENT BY 10 
+Irá criar uma sequence (tabela na verdade) chamada "role_sequence" com parametros definidos abaixo. 
+
+O comando para criar a mesma sequence em SQL seria:
+
+CREATE SEQUENCE role_sequence MINVALUE 1 START WITH 1 INCREMENT BY 10 
 
 	@@Id	
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator="ROLE_GEN")
@@ -488,14 +501,14 @@ Nessa opção, que a default, o ORM provider irá escolher qual é a melhor opç
 	private int id;
 
 
-	* Opção IDENTIFY:
+* Opção IDENTIFY:
 
-	É o modo mais simples de se gerar a primary key. Usa o mecanismo de AUTO INCREMENT do banco de dados, caso ele suporte.
-	Após a inserção da entidade no banco de dados, o provider rele o valor e atualiza o objeto em memoria.
-	Tem como desvantagem que, diferente do que acontece com os outros mecanismos que alocam os valores previamente em memoria, como a geração do valor só acontece após sua inserção, esse valor não tem como ser armazeado em memoria.
-	Não é possivel compartilhar os valores entre multiplas tabelas/entidades, como acontece nas outras estrategias.
+É o modo mais simples de se gerar a primary key. Usa o mecanismo de AUTO INCREMENT do banco de dados, caso ele suporte.
+Após a inserção da entidade no banco de dados, o provider rele o valor e atualiza o objeto em memoria.
+Tem como desvantagem que, diferente do que acontece com os outros mecanismos que alocam os valores previamente em memoria, como a geração do valor só acontece após sua inserção, esse valor não tem como ser armazeado em memoria.
+Não é possivel compartilhar os valores entre multiplas tabelas/entidades, como acontece nas outras estrategias.
 
-	1) Definição da estretegia:
+1) Definição da estretegia:
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -511,161 +524,155 @@ Mapping the Primary Key
 	);
 
 
-* Relacionamentos - Basicos
+### Relacionamentos - Basicos
 
 	
-	* ROLE
+#### ROLE
 	
-	"Há 3 lados de uma historia: o meu, o seu e a verddade"
-	No relacionameto de entidades, os "lados" do relacionamento, são chamados de ROLE.
-	Nesse relacionamento, empregado e projeto são as roles:
-	[EMPREGADO] <----> [PROJETO]
+"Há 3 lados de uma historia: o meu, o seu e a verddade"
+No relacionameto de entidades, os "lados" do relacionamento, são chamados de ROLE.
+Nesse relacionamento, empregado e projeto são as roles:
+
+[EMPREGADO] <----> [PROJETO]
 
 
-	* DIRECIONALIDADE
+#### DIRECIONALIDADE
 
-	Especifica em qual direção a relação entre as roles se comunicam.
+Especifica em qual direção a relação entre as roles se comunicam.
 
-	Unidirecional:
-	Acontece quando apenas uma role da relação tem conhecimento da outra. Por exemplo, funcionario e endereço. O funcionario tem um referencia para seu endereço, mas não existe a necessidade do endereço saber quem mora ali:
+#####Unidirecional:
 
-	[FUNCIONARIO] -----> [ENDERECO]
+Acontece quando apenas uma role da relação tem conhecimento da outra. Por exemplo, funcionario e endereço. O funcionario tem um referencia para seu endereço, mas não existe a necessidade do endereço saber quem mora ali:
 
-	Bidirecional:
-	Acontece quando as duas roles da relação se conhecem e uma pode acessar a outra. Por exemplo, na relação entre projeto e funcionarios, o funcionario precisa saber em qual projeto esta trabalhando e o projeto precisa poder consultar quem trabalha nele:
+[FUNCIONARIO] -----> [ENDERECO]
 
-	[FUNCIONARIO] <-----> [PROJETO]
+##### Bidirecional:
+
+Acontece quando as duas roles da relação se conhecem e uma pode acessar a outra. Por exemplo, na relação entre projeto e funcionarios, o funcionario precisa saber em qual projeto esta trabalhando e o projeto precisa poder consultar quem trabalha nele:
+
+[FUNCIONARIO] <-----> [PROJETO]
 
 
-	* CARDINALIDADE
+##### CARDINALIDADE
 
-	É a relação "quantos para quantos" que existe entre as roles. Podem ser:
+É a relação "quantos para quantos" que existe entre as roles. Podem ser:
 
-	1) Um para um
-	[FUNCIONARIO] 1 -----> 1 [ENDERECO]
-	Um funcionario tem um endereço;
-	Um endereço tem um funcionario (não é necessariamente verdade, mas ok)
+1) Um para um
 
-	2) Um para muitos
-	[FUNCIONARIO] * ------> 1 [DEPARTAMENTO]
-	Um funcionario trabalha em apenas departamento;
-	Um departamento tem varios funcionarios;
+[FUNCIONARIO] 1 -----> 1 [ENDERECO]
 
-	3) Muitos para um:
+Um funcionario tem um endereço;
+Um endereço tem um funcionario (não é necessariamente verdade, mas ok)
+
+2) Um para muitos
+
+[FUNCIONARIO] * ------> 1 [DEPARTAMENTO]
+
+Um funcionario trabalha em apenas departamento;
+Um departamento tem varios funcionarios;
+
+3) Muitos para um:
 	
 
-	4) Muitos para muitos
-	[FUNCIONARIO] * <-------------> * [PROJETO]
-	Um funcionario pode estar em varios projetos;
-	Um projeto pode ser composto de varios funcionarios;
+4) Muitos para muitos
 
-	* ORDINALIEDADE
+[FUNCIONARIO] * <-------------> * [PROJETO]
 
-	Define se a entidade target é mandatoria ou não no momento de persistir a entidade source.
-	Caso seja mandatorio e a entidade target não exista, a entidade source esta em um estado invalido;
-	Representado através do intervalor "0..1" ou "0..*" a anotação de cardinalidade;
+Um funcionario pode estar em varios projetos;
+Um projeto pode ser composto de varios funcionarios;
 
-	Exemplo:
-	[FUNCIONARIO] 0..* ------> 1 [DEPARTAMENTO]
+#### ORDINALIEDADE
+
+Define se a entidade target é mandatoria ou não no momento de persistir a entidade source.
+Caso seja mandatorio e a entidade target não exista, a entidade source esta em um estado invalido;
+Representado através do intervalor "0..1" ou "0..*" a anotação de cardinalidade;
+
+Exemplo:
+[FUNCIONARIO] 0..* ------> 1 [DEPARTAMENTO]
 
 
-* Relacionamentos - Mapeamento
+#### Relacionamentos - Mapeamento
 
 
-	Basico de relacionamento
-
-```
-	 _________				 _____________
-	|Employee |			 	| Departament |
-	|_________|			 	|_____________|	
-	| id	  |				| id 	      |
-	| name    | ---------->	                | name        |
-	| salary  |                             |             |  
-	| depto_id|				|	      |
-	|_________|				|_____________|
+Basico de relacionamento
 
 ```
+| Employee |			| Department |
+|----------|			|-----------:|
+| id       |			|         id |
+| name     |			|       name |
+| salary   |			|            |
+| depto_id |  -----*	|            |
 
 ```
-         _______________________________________________________
-	|Roles: 			Employee e Departament |
-	__________________________|____________________________|
-	|Soure: 		        Employee
-	__________________________|____________________________|
-	|Target: 			Departament
-	__________________________|____________________________|
-	|Join Column:	                "depto_id" em Employee;
-	__________________________|____________________________|
-	|Owner do relacionamento: 	Employee
-	__________________________|____________________________|
-	|Inverse Side: 			Departament  
-	__________________________|____________________________|
-```
+| Roles                  | Employee  e Department |
+|------------------------|-----------------------:|
+| Source                 |               Employee |
+| Target                 |             Department |
+| Join Column            |   depto_id em Employee |
+| Dono do relacionamento |               Employee |
+| Lado inverso           |             Department |
 
-	**********************************************************************
-	As propriedades e caracteristicas do mapeamento é sempre definido no lado dono da chave.
+**********************************************************************
+As propriedades e caracteristicas do mapeamento são sempre definidas no lado dono da chave.
 
-	In almost every relationship, independent of source and target sides, one of the two sides will have the join column in its table. That side is called the owning side or the owner of the relationship. The side that does not have the join column is called the non-owning or inverse side.
-	**********************************************************************
+**Em quase todo relacionamento, independente da entidade source e target, um dos lados ira ter uma join column (chave estrangeira). Esse lado é chamado o lado dono do relacionamento. O lado que não tem a chave é chamado de lado inverso.**
+**********************************************************************
 
 
-	* @ManyToOne
+* @ManyToOne
 
-	Um relacionamento "muitos para um" é definido através da anotação @ManyToOne no atributo do tipo do target(Departament) na entidade source (Employee):  
+Um relacionamento "muitos para um" é definido através da anotação @ManyToOne no atributo do tipo do target(Departament) na entidade source (Employee)
 
-	UML:
+Nesse relacionamento, o lado "Many" sempre é o dono da chave.
+
+UML:
 
 ```
-	 _________				 _____________
-	|Employe  |			 	| Departament |
-	|_________|			 	|_____________|	
-	| id	  |				| id 	      |
-	| name    | ---------->	                | name 	      |
-	| salary  |                             |-------------|  
-	| depto_id|				
-	|_________|				
-
+| Employee |            | Department |
+|----------|            |-----------:|
+| id       |            |         id |
+| name     |            |       name |
+| salary   |            |            |
+| depto_id |  -----*    |            |
 ```
 
 
-
-	Classe: 
+Classe: 
 
 ```
 	@Entity
 	public class Employee {
-            // ...
+            
             @ManyToOne
             private Department department;
-            // ...
+            
 	}
 ```
-	@JoinCOlumn
+**@JoinCOlumn**
 
-	Anotação usada para definir qual será o campo da foreign key do relacionamento.
-	No exemplo acima, do campo 'department' da entidade Employee, deve ser anotado com @JoinCOlumn. Dessa forma, a chave primaria de Departament será usada como chave estrangeira.
-	A chave sera definida de qualquer forma em Employee. A anotação @JoinColumn só sera usada para customizar esse campo na tabela (nome, tipo, etc)
-	Essa anotação vai sempre no lado dono do relacionamento.
+Anotação usada para definir qual será o campo da foreign key do relacionamento.
+No exemplo acima, do campo 'department' da entidade Employee, deve ser anotado com @JoinCOlumn. Dessa forma, a chave primaria de Departament será usada como chave estrangeira.
+A chave sera definida de qualquer forma em Employee. A anotação @JoinColumn só sera usada para customizar esse campo na tabela (nome, tipo, etc)
+Essa anotação vai sempre no lado dono do relacionamento.
 
 
 
-	* OneToOne
+* OneToOne
 
-	Relacionamento em que a cardinalidade é de apenas um ambos os lados
+Nesse relacionamento, há uma restrição em que uma entidade (source) tem que estar relacionamento com apenas uma outra (target)
 
 ```
-	 _________				    _____________
-	|Employe  |			 	    | ParkingSpace|
-	|_________|			 	    |_____________|	
-	| id	  |				    | id 	  |
-	| name    | 1 --> 1                    | lot         |
-	| salary  |                                 | location    |  
-	| depto_id|				    |	 	  |
-	|_________|				    |_____________|
+| Employee |            | Department |
+|----------|            |-----------:|
+| id       |            |         id |
+| name     |            |       name |
+| salary   |            |            |
+| depto_id | 1 -----* 1 |            |
 
 ```
 
-	Entidades 
+Entidades 
 	
 ```
 @Entity
@@ -676,8 +683,9 @@ public class Employee {
     @JoinColumn
     private ParkingSpace parkingSpace;
 }
-                
+```
 
+```            
 @Entity(name="parking_space")
 public class ParkingSpace {
 
@@ -687,76 +695,79 @@ public class ParkingSpace {
 }
 ```
 
-	The two rules, then, for bidirectional one-to-one associations are the following:
+The two rules, then, for bidirectional one-to-one associations are the following:
 
-		The @JoinColumn annotation goes on the mapping of the entity that is mapped to the table containing the join column, or the owner of the relationship. This might be on either side of the association.
+The @JoinColumn annotation goes on the mapping of the entity that is mapped to the table containing the join column, or the owner of the relationship. This might be on either side of the association.
 
-		The mappedBy element should be specified in the @OneToOne annotation in the entity that does not define a join column, or the inverse side of the relationship.
-	---------------------------------------------------------------------------------------------
+The mappedBy element should be specified in the @OneToOne annotation in the entity that does not define a join column, or the inverse side of the relationship.
 
-	MappedBy
+**MappedBy**
 
-		@Xpto(mappedBy="XPTO")
+@Xpto(mappedBy="XPTO")
 
-		O valor do atributo mappedBy deve ser o nome do atributo (parkingSpace) na entidade owner (Employee) do relacionamento que aponta de volta para a entidade inversa do relacionamento (ParkingSpace)
-
-
-		Na falta de mappedBy e JoinColumn nas duas entidades do relacionamento, ambos os lados serão considerados os owners do relactioamento, tendo assim cada uma chave estrangeira para a outra entidade.
-
-		Coisas estranhas acontece quando não se usa o "mappedBy";
-			Serve basicamente para informar a entidade que esse é um relacionamento bidirectional. Sem isso, ambos os lados do relacionamento irão considerar que estão em um relacionamento unidirecional.
+O valor do atributo mappedBy deve ser o nome do atributo (parkingSpace) na entidade owner (Employee) do relacionamento que aponta de volta para a entidade inversa do relacionamento (ParkingSpace)
 
 
-	* OneToMany
+Na falta de mappedBy e JoinColumn nas duas entidades do relacionamento, ambos os lados serão considerados os owners do relactioamento, tendo assim cada uma chave estrangeira para a outra entidade.
 
-	OneToMany(mappedBy = )
-		Todo relactioamento bidirectional OneToMany implica em um relacionamento ManyToOne no outro lado.
+Coisas estranhas acontece quando não se usa o "mappedBy";
+Serve basicamente para informar a entidade que esse é um relacionamento bidirectional. Sem isso, ambos os lados do relacionamento irão considerar que estão em um relacionamento unidirecional.
+
+
+* OneToMany
+
+OneToMany(mappedBy = )
+Todo relactioamento bidirectional OneToMany implica em um relacionamento ManyToOne no outro lado.
 	
-	Falto do mappedBy e a tabela de junção 
-		Pensando na tabela Departament, como colocar diversas chaves estrangeiras referente a cada funcionario que trabalha nesse departamento em uma só tabela? Impossivel!
-		Então, para fazer isso, na ausencia do parametro mappedBy, informando que esse lado do relacionamento não é o lado dominante e será criada uma tabela de junção.
+**Falta do mappedBy e a tabela de junção** 
 
-		Tabela departament_employee.
-		Campos:
-				CAMPO 			NULLABLE    CHAVE   	
-			staff_id		| 	NO	 	 |	PRI 	|	
-			departament_id	| 	NO		 |  MUL 	|
+Pensando na tabela Departament, como colocar diversas chaves estrangeiras referente a cada funcionario que trabalha nesse departamento em uma só tabela? Impossivel!
+		Então, para fazer isso, na ausencia do parametro mappedBy (o que implica em um relacionamento ManyToOne do outro lado), informando que esse lado do relacionamento não é o lado dominante e será criada uma tabela de junção.
+
+Tabela departament_employee.
+
+| Campo         	| NULLABLE 	| CHAVE 	|
+|---------------	|----------	|-------	|
+| employee_id   	| NO       	| PRI   	|
+| department_id 	| NO       	| MUL   	|
 
 	
 	
-	EntityTarget e Collection vs Collection<T>
-		Caso a collection utilizada para adicionar os campos não use generics, pode ser usado o campo entityTarget ta anotação @xptoToMany
+EntityTarget e Collection vs Collection<T>
 
-	***************************************************************************************************
-	The many-to-one side should be the owning side, so the join column should be defined on that side.
-	The one-to-many mapping should be the inverse side, so the mappedBy element should be used.
-	***************************************************************************************************
+Caso a collection utilizada para adicionar os campos não use generics, pode ser usado o campo entityTarget ta anotação @xptoToMany
+
+The many-to-one side should be the owning side, so the join column should be defined on that side.
+The one-to-many mapping should be the inverse side, so the mappedBy element should be used.
 
 
-	* ManyToMany
+* ManyToMany
 
-		Tabela de relacionamento
-		Ao usar esse tipo de relacionamento, sera obrigatoriamente criado uma (ou duas!!) tabela relacionamento entre as duas entidades.
-		Essa tabela terá duas colunas, ambas chaves estrangeiras que formaram a uma chave primaria, cada uma apontando um entrada de uma das tabelas compoentes do relacionamento.
-		Para personalizar a tabela criada, é possivel usar a anotação @JoinTable.
+Tabela de relacionamento
 
+Ao usar esse tipo de relacionamento, sera obrigatoriamente criado uma tabela relacionamento entre as duas entidades.
+Essa tabela terá duas colunas, ambas chaves estrangeiras que formaram a uma chave primaria, cada uma apontando um entrada de uma das tabelas compoentes do relacionamento.
+Para personalizar a tabela criada, é possivel usar a anotação @JoinTable.
+
+```
 			public class Employee {
 				@ManyToMany
 		    	@JoinTable(name = "employee_project",
 		            joinColumns = {@JoinColumn(name = "emp_id")}, 
 		            inverseJoinColumns = {@JoinColumn(name = "proj_id")})
-		    	private Collection<Project> projects;
+		    	private Collection[Project] projects;
 	    	}
+```
+**Git não aceita (pelo menos não achei como) sinal de maior e menor em bloco de codigo. Por isso o []
 
-	    	Será criada uma tabela employee_project (por acaso o mesmo nome que o nome padrão), a coluna representado a chave primaria da tabela dona do relacionamento será "emp_id" e a coluna representado a tabela Project, será "proj_id"
+
+Será criada uma tabela employee_project (por acaso o mesmo nome que o nome padrão), a coluna representado a chave primaria da tabela dona do relacionamento será "emp_id" e a coluna representado a tabela Project, será "proj_id"
 
 
-		Importancia do mappedBy em um dos lados
-		Nesse relacionamento, nenhum dos lados é explicitamente o owner do relacionamento. Então, não é necessario utilizar a anotação @JoinColumn, porque será criado uma tabela para fazer essa união. Porem, entretanto, todavia, caso um dos lados não utilize o campo mappedBy, serão criados duas tabelas para esse relacionamento.
-		Por exemplo, no relacioanemto muitos para muitos entre Employee e Projects:
+**Importancia do mappedBy em um dos lados**
 
-		@JoinTable
-
+Nesse relacionamento, nenhum dos lados é explicitamente o owner do relacionamento. Então, não é necessario utilizar a anotação @JoinColumn, porque será criado uma tabela para fazer essa união. Porem, entretanto, todavia, caso um dos lados não utilize o campo mappedBy, serão criados duas tabelas para esse relacionamento.
+Por exemplo, no relacionamento muitos para muitos entre Employee e Projects:
 
 		public class Employee {
 
@@ -775,57 +786,53 @@ public class ParkingSpace {
 		   private Collection<Employee> team;
 		}
 
-		Caso uma das entidades não tenha o atributo mappedBy definido, serão criadas as tabelas employee_project e project_employee!
-		No exemplo acima, como Project se declara como o lado inverso do relacionamento (mappedBy), será criado apenas a tabela employee_project. Tabela essa "customizada" pela anotação @JoinTable.
+Caso uma das entidades não tenha o atributo mappedBy definido, serão criadas as tabelas employee_project e project_employee!
+No exemplo acima, como Project se declara como o lado inverso do relacionamento (mappedBy), será criado apenas a tabela employee_project. Tabela essa "customizada" pela anotação @JoinTable.
 
 
-	* Eager e Lazy
+* Embedable
 
-		Para valores simples
-		Para collections
-		É só um dica
+**O que é?**
+Certas 'entidades' no mundo OO, fazem sentido estarem em classes separadas, porem no mundo relacional (banco de dados), as vezes nao faz sentido que estejam em tabelas separadas. Assim, é possivel definir que um atributo em uma classe, ao ser criado o banco de dados, não deve ser uma chave estretegia referenciando para outra entidade. Em vez disso, os atributo dessa outra entidade, serão adicionados na tabela da entidade primaria.
 
-	* Embedable
+Exemplo:
 
-		O que é?
-		Certas 'entidades' no mundo OO, fazem sentido estarem em classes separadas, porem no mundo relacional (banco de dados), as vezes nao faz sentido que estejam em tabelas separadas. Assim, é possivel definir que um atributo em uma classe, ao ser criado o banco de dados, não deve ser uma chave estretegia referenciando para outra entidade. Em vez disso, os atributo dessa outra entidade, serão adicionados na tabela da entidade primaria.
+Pense em cidade e estado dentro do endereço. No mundo OO, faz sentido estado e cidade estar em uma classe (chamada de Localização, por exemplo) separada e rua e numero (chamada de Endereço, por exemplo). E Endereço ter uma referencia para Localização.
 
-		Exemplo:
-
-			Pense em cidade e estado dentro do endereço. No mundo OO, faz sentido estado e cidade estar em uma classe (chamada de Localização, por exemplo) separada e rua e numero (chamada de Endereço, por exemplo). E Endereço ter uma referencia para Localização.
-
-			Porem, ao ser gerada as respectivas tabelas, os campos cidade e estado, devem ser criados na tabela endereço e não em uma nova tabela chamada Localização;
+Porem, ao ser gerada as respectivas tabelas, os campos cidade e estado, devem ser criados na tabela endereço e não em uma nova tabela chamada Localização;
 
 
-			 _________	
-			|Endereco |
-			|_________|
-			| rua	  |
-			| bairro  |
-			| numero  |
-			| cidade  |
-			| estado  |
-			|_________|
+```
+| Endereço 	|
+|----------	|
+| rua      	|
+| bairro   	|
+| numero   	|
+| cidade   	|
+| estado   	|
+```
 
 
-		Como definir uma classe embedable?
-			A classe não deve ser anotada com @Entity e não deve ter um @Id. Em vez disso, a mesma deve ser anotada com @Embedable;
+**Como definir uma classe embedable?**
 
-		Como definir um atributo embedado?
-			Na classe que irá embedar essa classe, opicionalmente, esse atributo pode ser anotado com @Embedade
+A classe não deve ser anotada com @Entity e não deve ter um @Id. Em vez disso, a mesma deve ser anotada com @Embedable;
 
-		Exemplo:
+**Como definir um atributo embedado?**
 
-		Classe que será embedada
+Na classe que irá embedar essa classe, opicionalmente, esse atributo pode ser anotado com @Embedade
+
+Exemplo:
+
+Classe que será embedada
 
 			@Embeddable
 			public class Location {
 			    
 			    private String city;
-			    
-			    private String state;
+				private String state;
 			}
 
+A entidade
 
 			@Entity(name = "address")
 			public class Address {
@@ -837,12 +844,11 @@ public class ParkingSpace {
 			}	
 		
 
-		Sobreescrevendo atributos
+**Sobreescrevendo atributos**
 
-			Por algum motivo, talvez vc queira mudar alguma informação sobre os atributos da classe que será embedada. Para isso, use as anotações AttrubuteOverride e AttrubuteOverrides
+Por algum motivo, talvez vc queira mudar alguma informação sobre os atributos da classe que será embedada. Para isso, use as anotações AttrubuteOverride e AttrubuteOverrides
 
-
-			Por exemplo, para mudar os nomes dos campos 'city' e 'state' para 'cidade' e 'estado'
+Por exemplo, para mudar os nomes dos campos 'city' e 'state' para 'cidade' e 'estado'
 
 			@Entity(name = "address")
 			public class Address {
@@ -858,11 +864,13 @@ public class ParkingSpace {
 			[...]
 		 }
 
-		 	A anotação @Column tem diversos parametros que podem ser usados para definir a nova coluna.
+
+A anotação @Column tem diversos parametros que podem ser usados para definir a nova coluna.
 
 
 
-************************************************* CHAPTER 5 - Collection Mapping ************************************************* 
+## Capitulo 5 - Collection Mapping
+
 
 	Coleção de entidades, embedables e tipos basicos;
 	@ElementCollection
@@ -888,11 +896,11 @@ public class ParkingSpace {
 			Ordenando os funcionarios por nome:
 
 				public class Department {
-				    // ...
+				    
 				    @OneToMany(mappedBy="department")
 				    @OrderBy("name ASC")
 				    private List<Employee> employees;
-				    // ...
+				    
 				}
 
 		Para ordernar por elemento de uma classe embedada na entidade, use o "."
