@@ -30,12 +30,16 @@ Para remover uma entidade, ela precisa ja esta sendo gerenciada
 
 **Jeito certo**
 
-````Employee emp = em.find(Employee.class, 158);
-em.remove(emp); //Caso emp seja null (não foi encontrado), será lançada uma IllegalArgumentException````
+```
+Employee emp = em.find(Employee.class, 158);
+em.remove(emp); //Caso emp seja null (não foi encontrado), será lançada uma IllegalArgumentException
+```
 
 **Jeito errado**
 
-````em.remove(new Employee(158)) //Esse objeto não faz parte do contexto de persistencia do entity manager````
+```
+em.remove(new Employee(158)) //Esse objeto não faz parte do contexto de persistencia do entity manager
+```
 
 Metodo "EntityManger.find" não precisa ser executado dentro de uma transação;
 
@@ -135,12 +139,16 @@ O nome gerado automatico é formado por "NOME COMPLETO DA CLASS/CAMPO"
 
 Modo SE de conseguir um EntityManager:
 
-```EntityManager em = Persistence.createEntityManagerFactory(PERSISTENCE UNIT).createEntityManager();```
+```
+EntityManager em = Persistence.createEntityManagerFactory(PERSISTENCE UNIT).createEntityManager();
+```
 
 Modo EE de conseguir um EntityManager:
 
-```@PersistenceContext(unitName = PERSISTENCE UNIT)
-private EntityManager em;```
+```
+@PersistenceContext(unitName = PERSISTENCE UNIT)
+private EntityManager em;
+```
 
 Nome do Persistence Unit não é obrigatorio, mas varia de vendor para vendor como tratar sua omissão (alguns, caso exista apenas um persistence unit no arquivo, usam esse. Outros obrigam o uso de um arquivo a parte)
 
@@ -603,7 +611,7 @@ Basico de relacionamento
 | name     |			|       name |
 | salary   |			|            |
 | depto_id |  -----*	|            |
-
+```
 ```
 | Roles                  | Employee  e Department |
 |------------------------|-----------------------:|
@@ -612,7 +620,7 @@ Basico de relacionamento
 | Join Column            |   depto_id em Employee |
 | Dono do relacionamento |               Employee |
 | Lado inverso           |             Department |
-
+```
 **********************************************************************
 As propriedades e caracteristicas do mapeamento são sempre definidas no lado dono da chave.
 
